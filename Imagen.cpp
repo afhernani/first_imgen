@@ -17,14 +17,14 @@ Imagen::Imagen()
     _maxi = 255;
 }
 Imagen::Imagen(int width, int heigh, int maxi)
-:_pixels(width*heigh, maxi)
+:_pixels(width*heigh,Pixel(maxi, maxi, maxi))
 {
     _width = width;
     _heigh = heigh;
     _maxi = maxi;
 }
 Imagen::Imagen(int width, int heigh)
-:_pixels(width*heigh, 0 )
+:_pixels(width*heigh, Pixel(0,0,0) )
 {
     _width = width;
     _heigh = heigh;
@@ -38,11 +38,11 @@ Imagen::Imagen(const Imagen& other)
     _maxi = other._maxi;
 }
 
-int Imagen::Getpixel(int i, int j)const
+Pixel Imagen::Getpixel(int i, int j)const
 {
     return _pixels[j*_width +i];
 }
-void Imagen::Setpixel(int i, int j, int valor){
+void Imagen::Setpixel(int i, int j, Pixel valor){
     _pixels[j*_width + i ] = valor;
 }
 void Imagen::lee(std::string nombre){
@@ -53,7 +53,7 @@ void Imagen::lee(std::string nombre){
     }
     string linea;
     getline(f, linea);
-    if(linea != "P2"){
+    if(linea != "P3"){
         cout << "formato incorrecto "<<endl;
         return;
     }
@@ -67,7 +67,9 @@ void Imagen::lee(std::string nombre){
     f >>_maxi;
     _pixels.resize(_width*_heigh);
     for(int i =0; i<(int)_pixels.size(); i++){
-        f>>_pixels[i];
+        f >>_pixels[i]._r;
+        f >>_pixels[i]._g;
+        f >>_pixels[i]._b;
     }
     f.close();
 }
@@ -79,12 +81,14 @@ void Imagen::save(std::string nombre)const
         cout << "fichero con algun problema" << endl;
         return;
     }
-    f <<"P2" << endl;
+    f <<"P3" << endl;
     f <<"# escrito por la clase Imagen" << endl;
     f << _width << " " << _heigh << endl;
     f << _maxi << endl;
     for(int i=0; i< (int)_pixels.size(); i++){
-        f<< _pixels[i] << ' ';
+        f<< _pixels[i]._r << ' ';
+        f<< _pixels[i]._g << ' ';
+        f<< _pixels[i]._b << ' ';
         if((i%_width) == (_width-1)){
             f << endl;
         }
@@ -121,19 +125,37 @@ void Imagen::paste( Imagen& I, int izq, int arr){
         }
     }
 }
-
+//Invertir pixel
+void Pixel::invertir(int maxi){
+    _r = maxi-_r;
+    _g = maxi-_g;
+    _b = maxi-_b;
+}
+//invertir los valores de la imagen
 void Imagen::invertir(){
     for(int i =0; i < (int)_pixels.size(); i++){
-        _pixels[i]= _maxi - _pixels[i];
+        _pixels[i].invertir(_maxi);
     }
+}
+//posterizar un pixel rgb
+//posterizar un valor
+int func_posterizar(int x, int maxi, int niveles)
+{
+    double valor = double(x)/double(maxi)*(niveles-1);
+    valor = round(valor);
+    return int(valor*double(maxi)/(niveles-1));
+}
+//posterizamos el pixel
+void Pixel::posterizar(int maxi, int niveles){
+    _r = func_posterizar(_r, maxi, niveles);
+    _g = func_posterizar(_g, maxi, niveles);
+    _b = func_posterizar(_b, maxi, niveles);
 }
 //esta función redondea el numero.
 //double round(double x){return floor(x+0.5);}
-
+//posterizar una imagen entre valores dados.
 void Imagen::posterizar(int niveles){
     for(int i = 0; i< int(_pixels.size()); i++){
-        double valor = double(_pixels[i])/double(_maxi)*(niveles-1);
-        valor = round(valor);
-        _pixels[i]=int(valor*double(_maxi)/(niveles-1));
+        _pixels[i].posterizar(_maxi, niveles);
     }
 }

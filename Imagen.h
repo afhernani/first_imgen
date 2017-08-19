@@ -11,21 +11,21 @@ struct Pixel{
     Pixel(int r, int g, int b){
         _r=r; _g=g; _b=b;
     }
-    void invertir();
-    void posterizar(int niveles);
+    void invertir(int maxi);
+    void posterizar(int maxi, int niveles);
 };
 
 class Imagen
 {
-    std::vector<int> _pixels;
+    std::vector<Pixel> _pixels;
     int _width, _heigh, _maxi;
     public:
         Imagen();
         Imagen(int width, int heigh);
         Imagen(int width, int heigh, int maxi);
         Imagen(const Imagen& other);
-        int Getpixel(int i, int j)const;
-        void Setpixel(int i, int j, int valor);
+        Pixel Getpixel(int i, int j)const;
+        void Setpixel(int i, int j, Pixel valor);
         void lee(std::string nombre);
         void save(std::string nombre)const;
         int width(){return _width;} //devuelve el ancho
